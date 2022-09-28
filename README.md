@@ -1,35 +1,36 @@
-# Kazakh_ASR
-This repository provides the recipe for the paper [KSC2: An Industrial-Scale Open-Source Kazakh Speech Corpus](link-will-be-later). 
+# Kazakh Speech Corpus 2
 
-## Setup and Requirements 
+This repository provides the recipe for the paper [KSC2: An Industrial-Scale Open-Source Kazakh Speech Corpus](https://www.isca-speech.org/archive/pdfs/interspeech_2022/mussakhojayeva22_interspeech.pdf).
 
-Our code builds upon [ESPnet](https://github.com/espnet/espnet), and requires prior installation of the framework. Please follow the [installation guide](https://espnet.github.io/espnet/installation.html) and put the Kazakh_ASR folder inside `espnet/egs2/` directory.
+## Pre-trained models
 
-After succesfull installation of ESPnet & Kaldi, go to `Kazakh_ASR/asr1`. 
+You can download the best performing model [here](model-link-later).
 
-## Downloading the dataset
- 
-Download [ISSAI_KSC_335RS dataset](https://issai.nu.edu.kz/kz-speech-corpus/) and untar in the directory of your choice. Specify the path to the dataset inside `espnet/egs2/Kazakh_ASR/asr1/run.sh` file:
+### Inference
+
+To convert your audio file to text, please make sure it follows a wav format with sample rate of 16k. Unzip the pre-trained model in the current directory, and make sure that ```asr_model_path & lm_model_path``` refer to valid directories. Install the necessary packages by running ```pip install -r requirements.txt```. 
+To perform the evaluation please run:
 ```
-dataset_path=/path_to_dataset/
+python recognize.py -f <path_to_your_wav>
+```
+
+## Dataset
+
+Download ISSAI_KSC2 dataset by filling [THIS](here-later) form, and untar ```tar -xvf ISSAI_KSC2.tar.gz```  in the directory of your choice. Specify the path to the dataset inside espnet/egs2/Kazakh_ASR/asr1/run.sh file:
+```
+python recognize.py -f <path_to_your_wav>
 ```
 
 ## Training
 
-To train the models, run the script `./run.sh` inside `Kazakh_ASR/asr1/` folder.
+Our code builds upon [ESPnet](https://github.com/espnet/espnet), and requires prior installation of the framework for DNN training. Please follow the [installation guide](https://espnet.github.io/espnet/installation.html) and put the TurkicASR folder inside `espnet/egs2/` directory. Run the traning scripts with `./run.sh`
 
-## Pre-trained model
-
-You can find the link to the latest pre-trained Transformer model [here](https://issai.nu.edu.kz/wp-content/uploads/2020/10/model.tar.gz). Untar it in `Kazakh_ASR/asr1/`. 
-
-## Inference
-To decode a single audio, specify wav file as well as the path of the pretrained models in `recognize.py` script.
+## Citation
 ```
-asr_model_path="exp/asr_train_ksc2_raw_ksc2_char_sp" ### path to asr_model
-lm_model_path="exp/lm_train_lm_ksc2_char" ### path to LM
-wav_file='path_to_wav_to_be_recognized' ### wav file to be recognized; sample rate=16k
-```
-Then, run the following script:
-```
-python recognize.py
+@inproceedings{mussakhojayeva22,
+  author={Saida Mussakhojayeva, Yerbolat Khassanov, Huseyin Atakan Varol},
+  title={KSC2: An Industrial-Scale Open-Source Kazakh Speech Corpus},
+  year=2022,
+  booktitle={Interspeech},
+}
 ```
