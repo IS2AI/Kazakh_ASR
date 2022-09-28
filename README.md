@@ -18,7 +18,7 @@ python recognize.py -f <path_to_your_wav>
 
 Download ISSAI_KSC2 dataset by filling [THIS](here-later) form, and untar ```tar -xvf ISSAI_KSC2.tar.gz```  in the directory of your choice. Specify the path to the dataset inside espnet/egs2/Kazakh_ASR/asr1/run.sh file:
 ```
-python recognize.py -f <path_to_your_wav>
+dataset_path=specify_path
 ```
 
 ## Training
