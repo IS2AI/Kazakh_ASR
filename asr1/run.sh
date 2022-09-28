@@ -7,7 +7,7 @@ set -o pipefail
 
 train_set=train
 valid_set=dev
-test_sets=test
+test_sets=dev
 
 asr_config=conf/train_asr.yaml
 inference_config=conf/decode_asr.yaml
@@ -15,7 +15,7 @@ lm_config=conf/train_lm.yaml
 use_lm=true
 use_wordlm=false
 
-dataset_path=/path_to_dataset/
+dataset_path=ISSAI_KSC2
 
 ### COPY ESPNET SCRIPTS ###
 if [ ! -f asr.sh ]
@@ -48,7 +48,7 @@ fi
 speed_perturb_factors="0.9 1.0 1.1"
 
 ./asr.sh                                               \
-    --lang kz                                          \
+    --lang ksc2                                          \
     --audio_format wav                                 \
     --feats_type raw                                   \
     --token_type char                                  \

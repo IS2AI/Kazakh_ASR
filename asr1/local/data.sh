@@ -37,11 +37,7 @@ mkdir -p $dev_dir
 mkdir -p $test_dir
 
 # Transcriptions preparation
-for dir in $train_dir $dev_dir $test_dir; do
-  log Preparing $dir transcriptions
-  log $dataset_path
-  local/prep_data.py $dataset_path
-  exit
-done
+log Preparing transcriptions
+local/prep_data.py $dataset_path
 
 log "Successfully finished. [elapsed=${SECONDS}s]"

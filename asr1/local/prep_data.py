@@ -2,10 +2,8 @@
 
 import sys, argparse, os, glob
 from tqdm import tqdm
-from pathlib import Path
 import regex, re
 import wave
-import contextlib
 
 seed=4
 
@@ -16,48 +14,66 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def get_duration(file_path):
-    duration = None
-    if os.path.exists(file_path) and Path(file_path).stat().st_size > 0:
-        with contextlib.closing(wave.open(file_path,'r')) as f:
-            frames = f.getnframes()
-            if frames>0:
-                rate = f.getframerate()
-                duration = frames / float(rate)
-    return duration if duration else 0
-            
+import struct
+
+def bytes_to_int(bytes: list) -> int:
+        result = 0
+        for byte in bytes:
+            result = (result << 8) + byte
+        return result
+
+def get_flac_duration(filename):
+    with open(filename, 'rb') as f:
+        if f.read(4) != b'fLaC':
+            raise ValueError('File is not a flac file')
+        header = f.read(4)
+        while len(header):
+            meta = struct.unpack('4B', header)  # 4 unsigned chars
+            block_type = meta[0] & 0x7f  # 0111 1111
+            size = bytes_to_int(header[1:4])
+
+            if block_type == 0:  # Metadata Streaminfo
+                streaminfo_header = f.read(size)
+                unpacked = struct.unpack('2H3p3p8B16p', streaminfo_header)
+                samplerate = bytes_to_int(unpacked[4:7]) >> 4
+                sample_bytes = [(unpacked[7] & 0x0F)] + list(unpacked[8:12])
+                total_samples = bytes_to_int(sample_bytes)
+                duration = float(total_samples) / samplerate
+
+                return duration
+            header = f.read(4)
+
 def get_text(path):
     with open(path, 'r') as f:
         return f.read()
 
 def make_dict(path):
-    wavs = glob.glob(path + "/*.wav")
+    audios = glob.glob(path + "/*.flac")
     files = {}
-    for wav in wavs:
-        folder_name = wav.split('/')[-2]
-        text = get_text(wav.replace('.wav', '.txt'))
-        rec_id = folder_name + '_' + os.path.basename(wav)
-        files[rec_id] = (wav, text)
+    for audio in audios:
+        folder_name = audio.split('/')[-2]
+        text = get_text(audio.replace('.flac', '.txt'))
+        rec_id = folder_name + '_' + os.path.basename(audio)
+        files[rec_id] = (audio, text)
     return files
 
 def prep_data(data_dirs):
     files = {}
-    for dir in tqdm(data_dirs):
-        x = make_dict(dir)
+    for d in tqdm(data_dirs):
+        x = make_dict(d)
         files.update(x)
     return files
 
 def normalize_text(text):
-    #replace = {'а':'a', 'с':'c',  'â':'a',  'í':'i', 'î':'i',  'û':'u', 'ı':'i'}
     text = text.strip()
-    text  = re.sub("[\(\{\[].*?[\)\}\]]", "", text) #remove (text*) and same for [], {}
-    text = re.sub('[-—–]', '-', text) # normalize hyphen
+    text  = re.sub("[\(\{\[].*?[\)\}\]]", "", text)
+    text = re.sub('[-—–]', '-', text)
     text = text.lower()
-    text = " ".join(regex.findall('\p{alpha}+', text)) # for v1
+    text = " ".join(regex.findall('\p{alpha}+', text))
     return text
 
 def write_dir(files, eval_dir):
-    wav_format = '-r 16000 -c 1 -b 16 -t wav - downsample |'
+    formatting = '-f wav -ar 16000 -ab 16 -ac 1 - |' ## this repo assumes the input are the .flac files
     total_dur = 0
     path_root = os.path.join('data', eval_dir)
     os.makedirs(path_root, exist_ok=True) 
@@ -70,18 +86,15 @@ def write_dir(files, eval_dir):
     open(path_root + '/spk2utt', 'w', encoding="utf-8") as f3, \
     open(path_root + '/wav.scp', 'w', encoding="utf-8") as f4:    
         for rec_id in rec_ids:
-            wav, text = files[rec_id]
+            audio, text = files[rec_id]
             text = normalize_text(text)
-            if len(text) > 256 or len(text) < 5: continue
-            dur = get_duration(wav)
-            if dur > 30 or dur < 1: continue
-            if rec_id=='.': print(rec_id, wav, text)
+            dur = get_flac_duration(audio)
             total_dur += dur
 
             f1.write(rec_id + ' ' + text + '\n')
             f2.write(rec_id + ' ' + rec_id + '\n')
             f3.write(rec_id + ' ' + rec_id + '\n')
-            f4.write(rec_id + ' sox ' + wav  + ' ' + wav_format +  '\n')
+            f4.write(rec_id + ' ffmpeg -i ' + audio  + ' ' + formatting +  '\n')
 
     print(eval_dir, "duration:", total_dur/3600)
 
@@ -91,7 +104,7 @@ def main():
     
     for eval_dir in ['train', 'dev', 'test']:
         print('Preparing', eval_dir)
-        dirs = glob.glob(data_path + '/*_'+eval_dir+'/')
+        dirs = glob.glob(data_path + '/'+eval_dir.capitalize()+'/*')
         files = prep_data(dirs)
         write_dir(files, eval_dir)
     
