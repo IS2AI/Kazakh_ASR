@@ -4,7 +4,7 @@ This repository provides the recipe for the paper [KSC2: An Industrial-Scale Ope
 
 ## Pre-trained models
 
-You can download the best performing model [here](model-link-later).
+You can download the best performing model [HERE](https://github.com/IS2AI/Kazakh_ASR/blob/main/asr_train_asr_raw_ksc2_char_sp_valid.acc.ave_10best.zip).
 
 ### Inference
 
