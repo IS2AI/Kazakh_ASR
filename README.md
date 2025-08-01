@@ -16,7 +16,7 @@ python recognize.py -f <path_to_your_wav>
 
 ## Dataset
 
-Download ISSAI_KSC2 dataset by filling [THIS](https://docs.google.com/forms/d/e/1FAIpQLSf_usCjxTvbH_2xhA6slH9FAfjrYVd4OHnr-CUcVVW3TEAscg/viewform) form, and untar ```tar -xvf ISSAI_KSC2.tar.gz```  in the directory of your choice. Specify the path to the dataset inside espnet/egs2/Kazakh_ASR/asr1/run.sh file:
+Download ISSAI_KSC2 dataset on [HuggingFace](https://huggingface.co/datasets/issai/Kazakh_Speech_Corpus_2) form, and untar ```tar -xvf ISSAI_KSC2.tar.gz```  in the directory of your choice. Specify the path to the dataset inside espnet/egs2/Kazakh_ASR/asr1/run.sh file:
 ```
 dataset_path=specify_path
 ```
